@@ -6,3 +6,7 @@
 [![L1pack](https://img.shields.io/badge/L1pack-0.52-orange)](https://cran.r-project.org/package=L1pack)
 
 Supplementary material to **A new coefficient to measure agreement between continuous variables** by Ronny Vallejos, Felipe Osorio and Clemente Ferrer
+
+Code tested on R under development (2025-02-20 r87772), running Linux Mint 22.1 (64 bits)
+
+Attached packages: fastmatrix 0.6, MVT 0.3-81, L1pack
