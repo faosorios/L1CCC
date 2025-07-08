@@ -11,3 +11,10 @@ Supplementary material to **A new coefficient to measure agreement between conti
 Code tested on R under development (2025-02-20 r87772), running Linux Mint 22.1 (64 bits)
 
 Attached packages: fastmatrix 0.6, MVT 0.3-81, L1pack, plot3D
+
+### Instructions: 
+To create the Dynamically Loaded (DL) library, using the console prompt move to `/RNG` directory and enter:
+
+`R CMD SHLIB -o RNG.so *.c -lblas -llapack -lm`
+
+Next, copy `RNG.so` file to the working directory (in our case to `/simulation`), and execute the commands in `simul_L1ccc.R` file.
