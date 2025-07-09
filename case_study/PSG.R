@@ -12,7 +12,7 @@ env <- envelope.student(fm0, reps = 5000)
 ## Fig. 1(a)
 ylim <- c(-2.5, 4.15)
 par(pty = "s", mai = c(1,1,.35,.35))
-qqnorm(env$trans, ylim = ylim, main = "", lwd = 2, cex.lab = 1.3)
+qqnorm(env$trans, ylim = ylim, main = "", xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", lwd = 2, cex.lab = 1.3)
 par(new = TRUE)
 qqnorm(env$envelope[,1], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab = "", lwd = 2, col = "red", type = "l")
 par(new = TRUE)
@@ -231,3 +231,21 @@ res[c(2,4)] <- sqrt(res[c(2,4)]) # computing std.err.
 res
 #     ccc  var.ccc     rho1 var.rho1 
 #0.842791 0.066949 0.603504 0.039805 
+
+## Fig. 4(a)
+env1 <- envelope.Laplace(fm1, reps = 5000)
+ylim <- c(-3, 4)
+par(pty = "s", mai = c(1,1,.35,.35))
+qqnorm(env1$trans, ylim = ylim, main = "", xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", lwd = 2, cex.lab = 1.3)
+par(new = TRUE)
+qqnorm(env1$envelope[,1], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab = "", lwd = 2, col = "red", type = "l")
+par(new = TRUE)
+qqnorm(env1$envelope[,2], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab = "", lwd = 2, col = "red", type = "l")
+
+## Fig. 4(b)
+D2  <- fm1$distances
+wts <- fm1$weights
+obs <- c(1,30,35,79)
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(D2, wts, xlab = "Mahalanobis distances", ylab = "Estimated weights")
+text(D2[obs], wts[obs], as.character(obs), pos = 3)
