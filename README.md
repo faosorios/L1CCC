@@ -12,7 +12,7 @@ Code tested on R under development (2025-02-20 r87772), running Linux Mint 22.1 
 
 Attached packages: fastmatrix 0.6, MVT 0.3-81, L1pack 0.60, plot3D 1.4.1
 
-### Instructions: 
+### Instructions to run the simulations: 
 To create the Dynamically Loaded (DL) library, using the console prompt move to `/RNG` directory and enter:
 
 `R CMD SHLIB -o RNG.so *.c -lblas -llapack -lm`
