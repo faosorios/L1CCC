@@ -18,3 +18,16 @@ To create the Dynamically Loaded (DL) library, using the console prompt move to 
 `R CMD SHLIB -o RNG.so *.c -lblas -llapack -lm`
 
 Next, copy `RNG.so` file to the working directory (in our case to `/simulation`), and execute the commands in `simul_L1ccc.R` file.
+
+CONTENTS:
+- case_study/PSG.R: R commands for the analysis of Transient sleep disorder dataset (described/analyzed at Section 3.2 from manuscript) and construction of Figures 2 and 3.
+- case_study/bound.R: R function and commands required to plotting Figure 3.
+- code/center_test.R: R functions to compute Wald, Rao score, gradient and Hotelling T-square test statistics.
+- code/RNG.R: R functions to generate multivariate Cauchy and contaminated normal deviates.
+- RNG/matrix.c: routines for basic matrix operations called by routines included in RNG.c
+- RNG/RNG.c: routines to random number generation called by functions in RNG.R
+- RNG/RNG.h: header file.
+- simulation/simul_L1ccc.R: R function to perform the simulation study described at Section 3.1 from manuscript.
+- simulation/output.R: information to create Tables 1 to 6.
+- simulation/RNG.so: Dynamically Loaded library with symbols required for the simulation study.
+- README.md: this file.
