@@ -10,7 +10,7 @@ Supplementary material to **A new coefficient to measure agreement between conti
 
 Code tested on R under development (2025-02-20 r87772), running Linux Mint 22.1 (64 bits)
 
-Attached packages: fastmatrix 0.6, MVT 0.3-81, L1pack, plot3D
+Attached packages: fastmatrix 0.6, MVT 0.3-81, L1pack 0.60, plot3D 1.4.1
 
 ### Instructions: 
 To create the Dynamically Loaded (DL) library, using the console prompt move to `/RNG` directory and enter:
