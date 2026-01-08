@@ -2,14 +2,39 @@
 library(fastmatrix)
 library(L1pack)
 library(MVT)
-source("../code/center_test.R")
 data(PSG)
 
-## model fit and simulated envelope under normal distribution
-fm0 <- studentFit(~ manual + automated, data = PSG, family = Student(eta = 0))
-env <- envelope.student(fm0, reps = 5000)
+## computing CCC
+z0 <- ccc(~ manual + automated, data = PSG, method = "asymp", equal.means = TRUE)
 
-## Fig. 1(a)
+## removing i-th observation
+nobs <- nrow(PSG)
+rhoc <- rep(0, nobs)
+for (i in 1:nobs)
+  rhoc[i] <- ccc(~ manual + automated, data = PSG, subset = -i)$ccc
+
+## Fig. 1
+obs <- c(1,30,79)
+cutoff <- z0$ccc
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(rhoc, type = "b", ylim = c(.65, .755), ylab = "CCC estimate", lwd = 2, cex.lab = 1.3)
+abline(h = cutoff, col = "red", lty = 2, lwd = 2)
+text(obs, rhoc[obs], as.character(obs), pos = 3)
+
+## model fit under normal distribution (eta = 0)
+fm0 <- studentFit(~ manual + automated, data = PSG, family = Student(eta = 0))
+D2 <- fm0$distances # squared Mahalanobis distances
+D0 <- sqrt(D2)
+
+## Fig. 2(a), under normality Mahalanobis distances follow a chi-distribution
+cutoff <- qchi(0.975, df = 2)
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(D0, ylim = c(0,5), ylab = "Mahalanobis distances", lwd = 2, cex.lab = 1.3)
+abline(h = cutoff, lwd = 2, lty = 2, col = "red")
+text(obs, D0[obs], as.character(obs), pos = 3)
+
+## Fig. 2(b), simulated envelope under normal distribution
+env <- envelope.student(fm0, reps = 5000)
 ylim <- c(-2.5, 4.15)
 par(pty = "s", mai = c(1,1,.35,.35))
 qqnorm(env$trans, ylim = ylim, main = "", xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", lwd = 2, cex.lab = 1.3)
@@ -18,45 +43,12 @@ qqnorm(env$envelope[,1], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab =
 par(new = TRUE)
 qqnorm(env$envelope[,2], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab = "", lwd = 2, col = "red", type = "l")
 
-## Fig. 1(b)
-z0 <- ccc(~ manual + automated, data = PSG, method = "asymp", equal.means = TRUE)
-nobs <- nrow(PSG)
-
-# removing i-th observation
-rhoc <- rep(0, nobs)
-for (i in 1:nobs)
-  rhoc[i] <- ccc(~ manual + automated, data = PSG, subset = -i)$ccc
-
-obs <- c(1,30,79)
-cutoff <- z0$ccc
-par(pty = "s", mai = c(1,1,.35,.35))
-plot(rhoc, type = "b", ylim = c(.65, .755), ylab = "CCC estimate", lwd = 2, cex.lab = 1.3)
-abline(h = cutoff, col = "red", lty = 2, lwd = 2)
-text(obs, rhoc[obs], as.character(obs), pos = 3)
-
-# package not longer required
+## package not longer required
 detach("package:MVT")
 
-## Fig. 2(a)
-xi <- seq(0, 2, length = 200)
-rho1 <- 1 - sqrt(xi)
-rhoc <- 1 - xi
-par(pty = "s")
-plot(xi, rhoc, type = "l", xlab = "", ylab = "", xlim = c(0,2), ylim = c(-1,1), lwd = 2, lty = 2, col = "red")
-lines(xi, rho1, lwd = 2)
-
-## Fig. 2(b)
-par(pty = "s")
-plot(rhoc, rho1, type = "l", xlab = "", ylab = "", xlim = c(-1,1), ylim = c(-.5,1), lwd = 2)
-
-## Fig. 3
-library(plot3D)
-source("bound.R")
-par(pty = "s", mai = c(.5,.5,.5,.5))
-persp3D(z = z, facets = FALSE, theta = 115, phi = 30, zlim = c(.5,1), xlab = "sigma11", ylab = "sigma22", zlab = "rho", bty = "b2", lwd = 2, colkey = FALSE)
-
-# package not longer required
-detach("package:plot3D")
+## ======================================================
+## for Figures 3(a),(b) and 4, please see plots/plots.R
+## ======================================================
 
 ## Table 7:
 
@@ -86,6 +78,7 @@ fm1$logLik
 ## Table 8:
 
 # Restricted parameter estimates under normal distribution
+z0 <- ccc(~ manual + automated, data = PSG, method = "asymp", equal.means = TRUE)
 x <- z0$x
 p <- ncol(x)
 mu <- z0$Restricted$center
@@ -121,6 +114,9 @@ Sigma
 logLik.Laplace
 #[1] -183.7141
 
+## reading sources for testing the equality of means
+source("../code/center_test.R")
+
 ## Table 9:
 
 # test statistics under normal distribution
@@ -152,7 +148,7 @@ pval <- 1 - pchisq(LRT0, df = 1)
 c(LRT0, pval)
 #[1] 7.688086 0.005559
 
-# test statistics under normal distribution
+# test statistics under Laplace distribution
 
 center.test(z1, test = "Wald")
 #Wald test for the equality of location parameters 
@@ -186,7 +182,7 @@ c(LRT1, pval)
 # Estimates of concordance coefficients under normal distribution
 z0
 #Call:
-#ccc(x = ~manual + automated, data = PSG, method = "asymp", equal.means = TRUE)
+# ccc(x = ~manual + automated, data = PSG, method = "asymp", equal.means = TRUE)
 #
 #Coefficients:
 #  estimate  variance  accuracy precision 
@@ -232,7 +228,66 @@ res
 #     ccc  var.ccc     rho1 var.rho1 
 #0.842791 0.066949 0.603504 0.039805 
 
-## Fig. 4(a)
+## Table 11:
+
+# removing some sets (CCC estimation)
+rm.00 <- ccc(~ manual + automated, data = PSG)
+rm.01 <- ccc(~ manual + automated, data = PSG, subset = -1)
+rm.30 <- ccc(~ manual + automated, data = PSG, subset = -30)
+rm.35 <- ccc(~ manual + automated, data = PSG, subset = -35)
+rm.79 <- ccc(~ manual + automated, data = PSG, subset = -79)
+rm.130 <- ccc(~ manual + automated, data = PSG, subset = -c(1,30))
+rm.179 <- ccc(~ manual + automated, data = PSG, subset = -c(1,79))
+rm.3079 <- ccc(~ manual + automated, data = PSG, subset = -c(30,79))
+rm.all <- ccc(~ manual + automated, data = PSG, subset = -c(1,30,79))
+
+rhoc <- c(rm.00$ccc, rm.01$ccc, rm.30$ccc, rm.35$ccc, rm.79$ccc, rm.130$ccc, rm.179$ccc, rm.3079$ccc, rm.all$ccc)
+chgc <- 100 * (rhoc - rhoc[1]) / rhoc[1]
+
+# removing some sets (L1 estimation)
+rm.00 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE)
+rm.01 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -1)
+rm.30 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -30)
+rm.35 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -35)
+rm.79 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -79)
+rm.130 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -c(1,30))
+rm.179 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -c(1,79))
+rm.3079 <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -c(30,79))
+rm.all <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -c(1,30,79))
+
+rho1 <- c(rm.00$rho1, rm.01$rho1, rm.30$rho1, rm.35$rho1, rm.79$rho1, rm.130$rho1, rm.179$rho1, rm.3079$rho1, rm.all$rho1)
+chg1 <- 100 * (rho1 - rho1[1]) / rho1[1]
+
+rhou <- c(rm.00$ustat$rho1, rm.01$ustat$rho1, rm.30$ustat$rho1, rm.35$ustat$rho1, rm.79$ustat$rho1, rm.130$ustat$rho1, rm.179$ustat$rho1, rm.3079$ustat$rho1, rm.all$ustat$rho1)
+chgu <- 100 * (rhou - rhou[1]) / rhou[1]
+
+tab11 <- cbind(rhoc, chgc, rho1, chg1, rhou, chgu)
+tab11
+#      rhoc    chgc     rho1     chg1     rhou     chgu
+# 0.674441  0.00000 0.585537  0.00000 0.657722  0.00000
+# 0.715232  6.04813 0.617462  5.45215 0.681472  3.61082
+# 0.748774 11.02143 0.627240  7.12205 0.688929  4.74464
+# 0.691157  2.47854 0.607699  3.78493 0.673376  2.37999
+# 0.724016  7.35059 0.615850  5.17693 0.683475  3.91545
+# 0.794671 17.82664 0.660068 12.72857 0.714347  8.60924
+# 0.770129 14.18775 0.649149 10.86386 0.708783  7.76324
+# 0.807841 19.77942 0.659171 12.57550 0.716754  8.97522
+# 0.860272 27.55342 0.693182 18.38398 0.743910 13.10399
+
+## removing i-th observation
+rho1 <- rep(0, nobs)
+for (i in 1:nobs)
+  rho1[i] <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -i)$rho1
+
+## Fig. 5(a)
+obs <- c(1,30,35,79)
+cutoff <- z1$rho1
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(rho1, type = "b", ylim = c(.56, .64), ylab = "L1 estimate", lwd = 2, cex.lab = 1.3)
+abline(h = cutoff, col = "red", lwd = 2, lty = 2)
+text(obs, rho1[obs], as.character(obs), pos = 3)
+
+## Fig. 5(b)
 env1 <- envelope.Laplace(fm1, reps = 5000)
 ylim <- c(-3, 4)
 par(pty = "s", mai = c(1,1,.35,.35))
@@ -242,10 +297,30 @@ qqnorm(env1$envelope[,1], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab 
 par(new = TRUE)
 qqnorm(env1$envelope[,2], axes = FALSE, ylim = ylim, main = "", xlab = "", ylab = "", lwd = 2, col = "red", type = "l")
 
-## Fig. 4(b)
-D2  <- fm1$distances
+## Fig. 6(a)
+D1  <- fm1$distances
 wts <- fm1$weights
-obs <- c(1,30,35,79)
+obs <- c(1,35,79)
 par(pty = "s", mai = c(1,1,.35,.35))
-plot(D2, wts, xlab = "Mahalanobis distances", ylab = "Estimated weights")
-text(D2[obs], wts[obs], as.character(obs), pos = 3)
+plot(D1, wts, xlab = "Mahalanobis distances", ylab = "Estimated weights", xlim = c(0,30), ylim = c(0,.5), lwd = 2, cex.lab = 1.3)
+text(D1[obs], wts[obs], as.character(obs), pos = 3)
+text(D1[30], wts[30], as.character(obs), pos = 3)
+
+## Fig. 6(b)
+obs <- c(1,30,35,79)
+cutoff <- qgamma(0.976, shape = 2, scale = 2)
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(D1, ylab = "Mahalanobis distances", ylim = c(0,30), lwd = 2, cex.lab = 1.3)
+abline(h = cutoff, lwd = 2, lty = 2, col = "red")
+text(obs, D1[obs], label = as.character(obs), pos = 3)
+
+## removing i-th observation
+rhou <- rep(0, nobs)
+for (i in 1:nobs)
+  rhou[i] <- l1ccc(~ manual + automated, data = PSG, boots = FALSE, subset = -i)$ustat$rho1
+
+## Fig. 7
+par(pty = "s", mai = c(1,1,.35,.35))
+plot(rhou, type = "b", ylim = c(.645,.7), ylab = "U-stat based coefficient", lwd = 2, cex.lab = 1.3)
+abline(h = rhou.00, lwd = 2, lty = 2, col = "red")
+text(obs, rhou[obs], label = as.character(obs), pos = 3)
