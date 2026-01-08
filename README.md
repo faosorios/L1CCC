@@ -6,7 +6,7 @@
 [![L1pack](https://img.shields.io/badge/L1pack-0.60-orange)](https://cran.r-project.org/package=L1pack)
 [![plot3D](https://img.shields.io/badge/plot3D-1.4.1-orange)](https://cran.r-project.org/package=plot3D)
 
-Supplementary material to **A new coefficient to measure agreement between continuous variables** by Ronny Vallejos, Felipe Osorio and Clemente Ferrer
+Replication files related to the paper **A new coefficient to measure agreement between continuous variables** by Ronny Vallejos, Felipe Osorio and Clemente Ferrer
 
 Code tested on R under development (2025-02-20 r87772), running Linux Mint 22.1 (64 bits)
 
